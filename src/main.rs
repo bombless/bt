@@ -65,12 +65,12 @@ impl Node {
             bitmap.insert((root_padding + idx as u32, height), c);
         }
         if left_stick > 0 {
-            let mut x = root_padding - 1;
-            let mut y = height + 1;
+            let mut x = root_padding;
+            let mut y = height;
             for _ in 0 .. left_stick {
-                bitmap.insert((x, y), '/');
                 x = x - 1;
                 y = y + 1;
+                bitmap.insert((x, y), '/');
             }
         }
         let mut x = root_padding + self.self_width();
@@ -133,7 +133,7 @@ impl Node {
 
     fn random(lower_limit: u32, higher_limit: u32) -> Node {
         loop {
-            let node = Self::random_acc(Node(12345, None, None), 123456, higher_limit).1;
+            let node = Self::random_acc(Node(12345, None, None), 12346, higher_limit).1;
             if node.width() > lower_limit {
                 return node
             }
@@ -165,7 +165,8 @@ fn main() {
     let tree3 = Node(3, tree2.sub_tree(), None);
     let tree4 = Node(4, None, tree3.sub_tree());
     let tree5 = Node(233, Some(Box::new(Node(234, None, None))), Some(Box::new(Node(235, None, None))));
-    println!("width {}", tree5.width());
+    println!("{}", tree1);
+    println!("{}", tree4);
     println!("{}", tree5);
     println!("{}", Node::random(30, 40));
 }

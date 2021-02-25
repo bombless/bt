@@ -21,10 +21,10 @@ impl Node {
     fn self_width(&self) -> u32 {
         let mut ret = 0;
         let mut acc = self.0;
-        if self.0 == 0 { return 1 }
+        if self.0 == 0 { return 3 }
         loop {
             if acc == 0 {
-                return ret
+                return if ret < 3 { 3 } else { ret }
             }
             acc = acc / 10;
             ret += 1;
@@ -60,9 +60,11 @@ impl Node {
         // println!("{} left stick width {}", self.0, left_stick);
         let right_stick = self.right_stick_width();
         // println!("{} right stick width {}", self.0, right_stick);
+
+        let pad = if self.0 < 100 { 1 } else { 0 };
         for (idx, c) in self.0.to_string().chars().enumerate() {
             // println!("insert {}", c);
-            bitmap.insert((root_padding + idx as u32, height), c);
+            bitmap.insert((root_padding + pad + idx as u32, height), c);
         }
         if left_stick > 0 {
             let mut x = root_padding;
@@ -103,7 +105,7 @@ impl Node {
         let mut rng = ::rand::thread_rng();
         
         
-        let next_step = if rng.gen::<bool>() {
+        let next_step = if rng.gen::<u8>() > 200 {
             let (next_step, left) = Self::random_acc(Node(step, None, None), step + 1, limit);
             if left.width() < limit {
                 acc.1 = left.sub_tree();
@@ -116,7 +118,7 @@ impl Node {
             step
         };
 
-        let final_step = if rng.gen::<bool>() {
+        let final_step = if rng.gen::<u8>() > 200 {
             let (final_step, right) = Self::random_acc(Node(next_step, None, None), next_step + 1, limit);
             if right.width() < limit {
                 acc.2 = right.sub_tree();
@@ -133,7 +135,7 @@ impl Node {
 
     fn random(lower_limit: u32, higher_limit: u32) -> Node {
         loop {
-            let node = Self::random_acc(Node(12345, None, None), 12346, higher_limit).1;
+            let node = Self::random_acc(Node(0, None, None), 1, higher_limit).1;
             if node.width() > lower_limit {
                 return node
             }

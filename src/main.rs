@@ -7,13 +7,13 @@ type Bitmap = std::collections::HashMap<(u32, u32), char>;
 
 impl NomalTreeNode {
     fn left_width(&self) -> u32 {
-        if let Some(ref left) = self.1 {
+        if let Some(left) = self.get_left() {
             return left.width()
         }
         return 0
     }
     fn right_width(&self) -> u32 {
-        if let Some(ref right) = self.2 {
+        if let Some(right) = self.get_right() {
             return right.width()
         }
         return 0
@@ -34,14 +34,14 @@ impl NomalTreeNode {
         self.left_width() + self.right_width() + self.self_width()
     }
     fn left_stick_width(&self) -> u32 {
-        if let Some(left) = self.1.as_deref() {
+        if let Some(left) = self.get_left() {
             // println!("{} left stick {} + {}", self.0, left.right_width(), left.self_width());
             return left.right_width() + 1
         }
         return 0
     }
     fn right_stick_width(&self) -> u32 {
-        if let Some(right) = self.2.as_deref() {
+        if let Some(right) = self.get_right() {
             return right.left_width() + 1
         }
         return 0
@@ -77,12 +77,12 @@ impl NomalTreeNode {
             y = y + 1;
         }
 
-        if let Some(left) = self.1.as_deref() {
+        if let Some(left) = self.get_left() {
             // !("printing left");
             left.print(padding, height + left_stick + 1, bitmap);
         }
 
-        if let Some(right) = self.2.as_deref() {
+        if let Some(right) = self.get_right() {
             right.print(root_padding + self.self_width(), height + right_stick + 1, bitmap);
         }
 

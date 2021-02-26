@@ -147,6 +147,15 @@ trait Node {
     fn get_right(&self) -> Option<&Self>;
 }
 
+impl Node for NomalTreeNode {
+    fn get_left(&self) -> Option<&Self> {
+        self.1.as_deref()
+    }
+    fn get_right(&self) -> Option<&Self> {
+        self.2.as_deref()
+    }
+}
+
 impl fmt::Display for NomalTreeNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut bitmap = Bitmap::new();

@@ -2,10 +2,10 @@
 use std::fmt;
 
 #[derive(Clone)]
-struct Node(u32, Option<Box<Node>>, Option<Box<Node>>);
+struct NomalTreeNode(u32, Option<Box<Self>>, Option<Box<Self>>);
 type Bitmap = std::collections::HashMap<(u32, u32), char>;
 
-impl Node {
+impl NomalTreeNode {
     fn left_width(&self) -> u32 {
         if let Some(ref left) = self.1 {
             return left.width()
@@ -32,12 +32,6 @@ impl Node {
     }
     fn width(&self) -> u32 {
         self.left_width() + self.right_width() + self.self_width()
-    }
-    fn leaf(val: u32) -> Box<Node> {
-        Box::new(Node(val, None, None))
-    }
-    fn some_leaf(val: u32) -> Option<Box<Node>> {
-        Some(Self::leaf(val))
     }
     fn left_stick_width(&self) -> u32 {
         if let Some(left) = self.1.as_deref() {
@@ -93,11 +87,15 @@ impl Node {
         }
 
     }
-    fn sub_tree(&self) -> Option<Box<Node>> {
+    fn sub_tree(&self) -> Option<Box<Self>> {
         Some(Box::new(self.clone()))
     }
 
-    fn random_acc(mut acc: Node, step: u32, limit: u32) -> (u32, Node) {
+    fn leaf(val: u32) -> Option<Box<Self>> {
+        Some(Box::new(NomalTreeNode(val, None, None)))
+    }
+
+    fn random_acc(mut acc: Self, step: u32, limit: u32) -> (u32, Self) {
         use ::rand::Rng;
         if acc.width() > limit {
             return (step, acc)
@@ -106,7 +104,7 @@ impl Node {
         
         
         let next_step = if rng.gen::<u8>() > 200 {
-            let (next_step, left) = Self::random_acc(Node(step, None, None), step + 1, limit);
+            let (next_step, left) = Self::random_acc(Self(step, None, None), step + 1, limit);
             if left.width() < limit {
                 acc.1 = left.sub_tree();
                 next_step
@@ -119,7 +117,7 @@ impl Node {
         };
 
         let final_step = if rng.gen::<u8>() > 200 {
-            let (final_step, right) = Self::random_acc(Node(next_step, None, None), next_step + 1, limit);
+            let (final_step, right) = Self::random_acc(Self(next_step, None, None), next_step + 1, limit);
             if right.width() < limit {
                 acc.2 = right.sub_tree();
                 final_step
@@ -133,9 +131,9 @@ impl Node {
         (final_step, acc)
     }
 
-    fn random(lower_limit: u32, higher_limit: u32) -> Node {
+    fn random(lower_limit: u32, higher_limit: u32) -> Self {
         loop {
-            let node = Self::random_acc(Node(0, None, None), 1, higher_limit).1;
+            let node = Self::random_acc(Self(0, None, None), 1, higher_limit).1;
             if node.width() > lower_limit {
                 return node
             }
@@ -144,7 +142,12 @@ impl Node {
     }
 }
 
-impl fmt::Display for Node {
+trait Node {
+    fn get_left(&self) -> Option<&Self>;
+    fn get_right(&self) -> Option<&Self>;
+}
+
+impl fmt::Display for NomalTreeNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut bitmap = Bitmap::new();
         self.print(0, 0, &mut bitmap);
@@ -162,13 +165,13 @@ impl fmt::Display for Node {
 }
 
 fn main() {
-    let tree1 = Node(0, None, None);
-    let tree2 = Node(2, Node::some_leaf(1), None);
-    let tree3 = Node(3, tree2.sub_tree(), None);
-    let tree4 = Node(4, None, tree3.sub_tree());
-    let tree5 = Node(233, Some(Box::new(Node(234, None, None))), Some(Box::new(Node(235, None, None))));
+    let tree1 = NomalTreeNode(0, None, None);
+    let tree2 = NomalTreeNode(2, NomalTreeNode::leaf(1), None);
+    let tree3 = NomalTreeNode(3, tree2.sub_tree(), None);
+    let tree4 = NomalTreeNode(4, None, tree3.sub_tree());
+    let tree5 = NomalTreeNode(233, NomalTreeNode::leaf(234), NomalTreeNode::leaf(235));
     println!("{}", tree1);
     println!("{}", tree4);
     println!("{}", tree5);
-    println!("{}", Node::random(30, 40));
+    println!("{}", NomalTreeNode::random(30, 40));
 }

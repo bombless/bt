@@ -59,6 +59,47 @@ impl NomalTreeNode {
         }
         
     }
+
+    fn print(&self, padding: u32, height: u32, bitmap: &mut Bitmap) {
+        let root_padding = padding + self.left_width();
+        // println!("{} root_padding {}", self.0, root_padding);
+        let left_stick = self.left_stick_width();
+        // println!("{} left stick width {}", self.0, left_stick);
+        let right_stick = self.right_stick_width();
+        // println!("{} right stick width {}", self.0, right_stick);
+
+        let pad = if self.get_value() < 100 { 1 } else { 0 };
+        for (idx, c) in self.get_value().to_string().chars().enumerate() {
+            // println!("insert {}", c);
+            bitmap.insert((root_padding + pad + idx as u32, height), c);
+        }
+        if left_stick > 0 {
+            let mut x = root_padding;
+            let mut y = height;
+            for _ in 0 .. left_stick {
+                x = x - 1;
+                y = y + 1;
+                bitmap.insert((x, y), '/');
+            }
+        }
+        let mut x = root_padding + self.self_width();
+        let mut y = height + 1;
+        for _ in 0 .. right_stick {
+            bitmap.insert((x, y), '\\');
+            x = x + 1;
+            y = y + 1;
+        }
+
+        if let Some(left) = self.get_left() {
+            // !("printing left");
+            left.print(padding, height + left_stick + 1, bitmap);
+        }
+
+        if let Some(right) = self.get_right() {
+            right.print(root_padding + self.self_width(), height + right_stick + 1, bitmap);
+        }
+
+    }
 }
 
 trait Node {
@@ -109,47 +150,6 @@ trait Node {
             return right.left_width() + 1
         }
         return 0
-    }
-
-    fn print(&self, padding: u32, height: u32, bitmap: &mut Bitmap) {
-        let root_padding = padding + self.left_width();
-        // println!("{} root_padding {}", self.0, root_padding);
-        let left_stick = self.left_stick_width();
-        // println!("{} left stick width {}", self.0, left_stick);
-        let right_stick = self.right_stick_width();
-        // println!("{} right stick width {}", self.0, right_stick);
-
-        let pad = if self.get_value() < 100 { 1 } else { 0 };
-        for (idx, c) in self.get_value().to_string().chars().enumerate() {
-            // println!("insert {}", c);
-            bitmap.insert((root_padding + pad + idx as u32, height), c);
-        }
-        if left_stick > 0 {
-            let mut x = root_padding;
-            let mut y = height;
-            for _ in 0 .. left_stick {
-                x = x - 1;
-                y = y + 1;
-                bitmap.insert((x, y), '/');
-            }
-        }
-        let mut x = root_padding + self.self_width();
-        let mut y = height + 1;
-        for _ in 0 .. right_stick {
-            bitmap.insert((x, y), '\\');
-            x = x + 1;
-            y = y + 1;
-        }
-
-        if let Some(left) = self.get_left() {
-            // !("printing left");
-            left.print(padding, height + left_stick + 1, bitmap);
-        }
-
-        if let Some(right) = self.get_right() {
-            right.print(root_padding + self.self_width(), height + right_stick + 1, bitmap);
-        }
-
     }
 }
 

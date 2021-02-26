@@ -6,6 +6,70 @@ struct NomalTreeNode(u32, Option<Box<Self>>, Option<Box<Self>>);
 type Bitmap = std::collections::HashMap<(u32, u32), char>;
 
 impl NomalTreeNode {
+    fn sub_tree(&self) -> Option<Box<Self>> {
+        Some(Box::new(self.clone()))
+    }
+
+    fn some_leaf(value: u32) -> Option<Box<Self>> {
+        Some(Box::new(Self::leaf(value)))
+    }
+
+    fn random_acc(mut acc: Self, step: u32, limit: u32) -> (u32, Self) {
+        use ::rand::Rng;
+        if acc.width() > limit {
+            return (step, acc)
+        }
+        let mut rng = ::rand::thread_rng();
+        
+        
+        let next_step = if rng.gen::<u8>() > 200 {
+            let (next_step, left) = Self::random_acc(Self::leaf(step), step + 1, limit);
+            if left.width() < limit {
+                acc.1 = left.sub_tree();
+                next_step
+            } else {
+                step
+            }
+            
+        } else {
+            step
+        };
+
+        let final_step = if rng.gen::<u8>() > 200 {
+            let (final_step, right) = Self::random_acc(Self::leaf(next_step), next_step + 1, limit);
+            if right.width() < limit {
+                acc.2 = right.sub_tree();
+                final_step
+            } else {
+                next_step
+            }
+        } else {
+            next_step
+        };
+        
+        (final_step, acc)
+    }
+
+    fn random(lower_limit: u32, higher_limit: u32) -> Self {
+        loop {
+            let node = Self::random_acc(Self::leaf(0), 1, higher_limit).1;
+            if node.width() > lower_limit {
+                return node
+            }
+        }
+        
+    }
+}
+
+trait Node {
+    fn get_left(&self) -> Option<&Self>;
+    fn get_right(&self) -> Option<&Self>;
+    fn get_value(&self) -> u32;
+    fn leaf(value: u32) -> Self;
+    fn set_left(&mut self, left: Option<Self>) where Self: Sized;
+    fn set_right(&mut self, right: Option<Self>) where Self: Sized;
+
+
     fn left_width(&self) -> u32 {
         if let Some(left) = self.get_left() {
             return left.width()
@@ -87,65 +151,6 @@ impl NomalTreeNode {
         }
 
     }
-    fn sub_tree(&self) -> Option<Box<Self>> {
-        Some(Box::new(self.clone()))
-    }
-
-    fn leaf(val: u32) -> Option<Box<Self>> {
-        Some(Box::new(NomalTreeNode(val, None, None)))
-    }
-
-    fn random_acc(mut acc: Self, step: u32, limit: u32) -> (u32, Self) {
-        use ::rand::Rng;
-        if acc.width() > limit {
-            return (step, acc)
-        }
-        let mut rng = ::rand::thread_rng();
-        
-        
-        let next_step = if rng.gen::<u8>() > 200 {
-            let (next_step, left) = Self::random_acc(Self(step, None, None), step + 1, limit);
-            if left.width() < limit {
-                acc.1 = left.sub_tree();
-                next_step
-            } else {
-                step
-            }
-            
-        } else {
-            step
-        };
-
-        let final_step = if rng.gen::<u8>() > 200 {
-            let (final_step, right) = Self::random_acc(Self(next_step, None, None), next_step + 1, limit);
-            if right.width() < limit {
-                acc.2 = right.sub_tree();
-                final_step
-            } else {
-                next_step
-            }
-        } else {
-            next_step
-        };
-        
-        (final_step, acc)
-    }
-
-    fn random(lower_limit: u32, higher_limit: u32) -> Self {
-        loop {
-            let node = Self::random_acc(Self(0, None, None), 1, higher_limit).1;
-            if node.width() > lower_limit {
-                return node
-            }
-        }
-        
-    }
-}
-
-trait Node {
-    fn get_left(&self) -> Option<&Self>;
-    fn get_right(&self) -> Option<&Self>;
-    fn get_value(&self) -> u32;
 }
 
 impl Node for NomalTreeNode {
@@ -157,6 +162,15 @@ impl Node for NomalTreeNode {
     }
     fn get_value(&self) -> u32 {
         self.0
+    }
+    fn leaf(val: u32) -> Self {
+        NomalTreeNode(val, None, None)
+    }
+    fn set_left(&mut self, left: Option<Self>) {
+        self.1 = left.map(Box::new)
+    }
+    fn set_right(&mut self, right: Option<Self>) {
+        self.2 = right.map(Box::new)
     }
 }
 
@@ -179,10 +193,10 @@ impl fmt::Display for NomalTreeNode {
 
 fn main() {
     let tree1 = NomalTreeNode(0, None, None);
-    let tree2 = NomalTreeNode(2, NomalTreeNode::leaf(1), None);
+    let tree2 = NomalTreeNode(2, NomalTreeNode::some_leaf(1), None);
     let tree3 = NomalTreeNode(3, tree2.sub_tree(), None);
     let tree4 = NomalTreeNode(4, None, tree3.sub_tree());
-    let tree5 = NomalTreeNode(233, NomalTreeNode::leaf(234), NomalTreeNode::leaf(235));
+    let tree5 = NomalTreeNode(233, NomalTreeNode::some_leaf(234), NomalTreeNode::some_leaf(235));
     println!("{}", tree1);
     println!("{}", tree4);
     println!("{}", tree5);

@@ -20,8 +20,8 @@ impl NomalTreeNode {
     }
     fn self_width(&self) -> u32 {
         let mut ret = 0;
-        let mut acc = self.0;
-        if self.0 == 0 { return 3 }
+        let mut acc = self.get_value();
+        if acc == 0 { return 3 }
         loop {
             if acc == 0 {
                 return if ret < 3 { 3 } else { ret }
@@ -55,8 +55,8 @@ impl NomalTreeNode {
         let right_stick = self.right_stick_width();
         // println!("{} right stick width {}", self.0, right_stick);
 
-        let pad = if self.0 < 100 { 1 } else { 0 };
-        for (idx, c) in self.0.to_string().chars().enumerate() {
+        let pad = if self.get_value() < 100 { 1 } else { 0 };
+        for (idx, c) in self.get_value().to_string().chars().enumerate() {
             // println!("insert {}", c);
             bitmap.insert((root_padding + pad + idx as u32, height), c);
         }
@@ -145,6 +145,7 @@ impl NomalTreeNode {
 trait Node {
     fn get_left(&self) -> Option<&Self>;
     fn get_right(&self) -> Option<&Self>;
+    fn get_value(&self) -> u32;
 }
 
 impl Node for NomalTreeNode {
@@ -153,6 +154,9 @@ impl Node for NomalTreeNode {
     }
     fn get_right(&self) -> Option<&Self> {
         self.2.as_deref()
+    }
+    fn get_value(&self) -> u32 {
+        self.0
     }
 }
 
